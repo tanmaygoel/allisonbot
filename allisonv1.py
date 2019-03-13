@@ -22,12 +22,6 @@ yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah"]
 no_list = ["no", "nope", "nop", "nah", "not really"]
 name = "tanny" #default
 
-# engine = pyttsx3.init()
-# voices = engine.getProperty('voices')
-
-# engine.setProperty('voice', voices[17].id)
-analyser = SentimentIntensityAnalyzer()
-
 r = sr.Recognizer()
 
 def say(text_input):
@@ -95,11 +89,8 @@ def wait_and_listen():
 			print("Could not request results from Google Speech Recognition service; {0}".format(e))
 	
 def get_sentiment(text):
-	# sent_text = TextBlob(text)
-
-	# sentiment = sent_text.sentiment.polarity
-	# #print(sentiment)
-	# return sentiment
+	
+	analyser = SentimentIntensityAnalyzer()
 	score = analyser.polarity_scores(text)
 	return score
 	
@@ -115,90 +106,66 @@ def is_in_affirm_list(sentence):
 		else:
 			return 0
 
-# def get_name():
-# 	string = entry.get()
-# 	#say("Awesome! Nice to meet you " + string + ". How are you doing today?")
-# 	global root
-# 	root.destroy()
-
-# 	global name
-# 	name = string
-
-
 ###############################################################################
 #First Contact
+def block_1():
+	say("Hello there. What's your name?")
+	reply = listen()
 
-say("Hello there. What's your name?")
-reply = listen()
+	name = reply
 
-name = reply
+	say("You said " + name + ". Did I say that right?")
+	reply = listen()
 
-say("You said " + name + ". Did I say that right?")
-reply = listen()
+	x = is_in_affirm_list(reply)
 
-x = is_in_affirm_list(reply)
+	if x != "yes":
+		say("I'm sorry. Do you mind typing it for me?")
 
-if x != "yes":
-	say("I'm sorry. Do you mind typing it for me?")
+		name = input("Enter your name - ")
 
-	name = input("Enter your name - ")
-	
-	# root = tk.Tk()
-	
-	# label = tk.Label(root, text = "Name")
-	# label.grid(row = 0, column = 0)
+	say("Awesome! Nice to meet you " + name + ". How are you doing today?")
 
-	# entry = tk.Entry(root)
-	# entry.grid(row = 0, column = 1)
+	reply = listen()
 
-	# button = tk.Button(root, text = 'Submit', command = get_name)
-	# button.grid(row = 1, column = 1)
+	sentiment = get_sentiment(reply)
 
-	# #root.mainloop()
-	# #root.destroy()
+	if sentiment['compound'] >= 0.05:
+		say("That's amazing " + name + ". Glad to hear that. Here is a song for you")
+		webbrowser.open("https://www.youtube.com/watch?v=ZbZSe6N_BXs")
 
-say("Awesome! Nice to meet you " + name + ". How are you doing today?")
+	elif sentiment['compound'] <= -0.05:
+		say("That's okay " + name + "! The day is over now. Let me soothe you with some nice music")
+		webbrowser.open("https://www.youtube.com/watch?v=xDhjma091uI")
 
-reply = listen()
+	else:
+		say("Nothing good, but nothing bad either! "+ "Right " + name + "? Here is a song for you!")
+		webbrowser.open("https://www.youtube.com/watch?v=HCjNJDNzw8Y")
 
-sentiment = get_sentiment(reply)
-
-if sentiment['compound'] >= 0.05:
-	say("That's amazing " + name + ". Glad to hear that. Here is a song for you")
-	webbrowser.open("https://www.youtube.com/watch?v=ZbZSe6N_BXs")
-
-elif sentiment['compound'] <= -0.05:
-	say("That's okay" + name + "! The day is over now. Let me soothe you with some nice music")
-	webbrowser.open("https://www.youtube.com/watch?v=xDhjma091uI")
-
-else:
-	say("Nothing good, but nothing bad either! "+ "Right " + name + "? Here is a song for you!")
-	webbrowser.open("https://www.youtube.com/watch?v=HCjNJDNzw8Y")
-
-say("Just pause the song and say hello to me when you are done listening!")
-wait_and_listen()
+	say("Just pause the song and say hello to me when you are done listening!")
+	wait_and_listen()
 
 ###############################################################################
 #Second contact
-os.system("killall -9 'Google Chrome'")
+def block_2():
+	os.system("killall -9 'Google Chrome'")
 
-say("So. Did you like that song?")
+	say("So. Did you like that song?")
 
-reply = listen()
+	reply = listen()
 
-x = is_in_affirm_list(reply)
+	x = is_in_affirm_list(reply)
 
-if x == "yes":
-	say("I'm happy to hear that! I will play more such songs that you like.")
+	if x == "yes":
+		say("I'm happy to hear that! I will play more such songs that you like.")
 
-else:
-	say("Oh, that's a shame. I really liked it. But I will remember your preference.")
+	else:
+		say("Oh, that's a shame. I really liked it. But I will remember your preference.")
 
 ###############################################################################
 #Favourite movie
-
-say("Why don't you tell me your favorite movie?")
-reply = listen()
-
+def block_3():
+	say("Why don't you tell me your favorite movie?")
+	reply = listen()
 
 
