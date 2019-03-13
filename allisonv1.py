@@ -1,15 +1,13 @@
 import webbrowser
 import pyttsx3
 import speech_recognition as sr
-from textblob import TextBlob
-import tkinter as tk 
 from watson_developer_cloud import TextToSpeechV1
-import json
 import time
 import pyglet
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
 import random
+import pandas as pd
 
 
 #Different word lists
@@ -19,13 +17,16 @@ text_to_speech = TextToSpeechV1(
     url='https://stream.watsonplatform.net/text-to-speech/api'
 )
 
+#DEFAULTS AND INITIALISATIONS
 yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure"]
 no_list = ["no", "nope", "nop", "nah", "not really", "not sure"]
-name = "tanny" #default
+name = "tanny" 
 current_mood = 'neutral'
 fav_movie = 'star wars'
 
 r = sr.Recognizer()
+df = pd.read_excel('music_database.xlsx')
+
 
 def say(text_input):
 	# print("Pybot - " + text + "\n")
@@ -53,19 +54,19 @@ def say(text_input):
 	
 
 def listen():
-	x = 1
-
-	while x == 1:
+	
+	while True:
 		with sr.Microphone() as source:
 		    print("Say something!")
 		    audio = r.listen(source)
+		    #r.adjust_for_ambient_noise(source, duration = 1)
 		    
 		try:
 			userinput = r.recognize_google(audio)
 			print("You said - " + userinput)
 			break
 		except sr.UnknownValueError:
-			print("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
+			#print("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
 			say("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
 		except sr.RequestError as e:
 		    print("Could not request results from Google Speech Recognition service; {0}".format(e))
@@ -73,9 +74,9 @@ def listen():
 	return userinput
 
 def wait_and_listen():
-	x = 1
+	#r.adjust_for_ambient_noise(sr.Microphone(), duration = 1)
 
-	while x == 1:
+	while True:
 		with sr.Microphone() as source:
 		    print("Say something!")
 		    audio = r.listen(source)
@@ -143,7 +144,7 @@ def block_1():
 		# name = input("Enter your name - ")
 		name = get_input('name')
 
-	say("Awesome! Nice to meet you " + name + ". How are you doing today?")
+	say("Awesome! Nice to meet you " + name + ". My name is Allison! How are you doing today?")
 
 	reply = listen()
 
@@ -164,10 +165,11 @@ def block_1():
 
 	say("Just pause the song and say hello to me when you are done.")
 	wait_and_listen()
+	song_feedback()
 
 ###############################################################################
 #Second contact
-def block_2():
+def song_feedback():
 	os.system("killall -9 'Google Chrome'")
 
 	say("So. Did you like that song?")
@@ -184,7 +186,7 @@ def block_2():
 
 ###############################################################################
 #Favourite movie
-def block_3():
+def block_2():
 	say("Why don't you tell me your favorite movie?")
 	fav_movie = listen()
 
@@ -200,10 +202,20 @@ def block_3():
 		# name = input("Enter your name - ")
 		fav_movie = get_input('movie')
 
-	say(fav_movie + "! I love that movie! Here is my favourite track from the movie")
+	say(fav_movie + "! I love that movie! Here is my favourite track from " + fav_movie + ".")
+
+	x = df.loc[df['movie'] == fav_movie.lower()]
+	x = x.sample(n=1)
+
+	say("Here is " + x['song'].values[0].title() + " from " + x['movie'].values[0].title() + ".")
+	say("Just pause the song and say hello to me when you are done.")
+	webbrowser.open(x['link'].values[0])
+
+	wait_and_listen()
+	song_feedback()
+
 
 #MAIN
 
-#block_1()
-#block_2()
-block_3()
+block_1()
+block_2()
