@@ -9,6 +9,7 @@ import time
 import pyglet
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
+import random
 
 
 #Different word lists
@@ -18,9 +19,11 @@ text_to_speech = TextToSpeechV1(
     url='https://stream.watsonplatform.net/text-to-speech/api'
 )
 
-yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah"]
-no_list = ["no", "nope", "nop", "nah", "not really"]
+yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure"]
+no_list = ["no", "nope", "nop", "nah", "not really", "not sure"]
 name = "tanny" #default
+current_mood = 'neutral'
+fav_movie = 'star wars'
 
 r = sr.Recognizer()
 
@@ -93,6 +96,14 @@ def get_sentiment(text):
 	analyser = SentimentIntensityAnalyzer()
 	score = analyser.polarity_scores(text)
 	return score
+
+def get_sentiment_emotion(sentiment): 
+	if sentiment['compound'] >= 0.05:
+		return 'positive'
+	elif sentiment['compound'] <= -0.05:
+		return 'negative'
+	else:
+		return 'neutral'
 	
 
 def is_in_affirm_list(sentence):
@@ -106,35 +117,44 @@ def is_in_affirm_list(sentence):
 		else:
 			return 0
 
+def get_input(value):
+
+	sorry_list = ["I'm sorry.", "Oh, my bad!", "I'll definitely get it correct next time!"]
+
+	say(random.choice(sorry_list) + " Do you mind typing it for me?")
+	text_input = input("Enter " + value + " - ")
+	return text_input
+
+
 ###############################################################################
 #First Contact
 def block_1():
 	say("Hello there. What's your name?")
-	reply = listen()
+	name = listen()
 
-	name = reply
-
-	say("You said " + name + ". Did I say that right?")
+	say("You said " + name + ". Did I hear that right?")
 	reply = listen()
 
 	x = is_in_affirm_list(reply)
 
 	if x != "yes":
-		say("I'm sorry. Do you mind typing it for me?")
+		# say("I'm sorry. Do you mind typing it for me?")
 
-		name = input("Enter your name - ")
+		# name = input("Enter your name - ")
+		name = get_input('name')
 
 	say("Awesome! Nice to meet you " + name + ". How are you doing today?")
 
 	reply = listen()
 
-	sentiment = get_sentiment(reply)
+	sentiment = get_sentiment_emotion(get_sentiment(reply)) 
+	current_mood = sentiment
 
-	if sentiment['compound'] >= 0.05:
+	if sentiment == 'positive':
 		say("That's amazing " + name + ". Glad to hear that. Here is a song for you")
 		webbrowser.open("https://www.youtube.com/watch?v=ZbZSe6N_BXs")
 
-	elif sentiment['compound'] <= -0.05:
+	elif sentiment == 'negative':
 		say("That's okay " + name + "! The day is over now. Let me soothe you with some nice music")
 		webbrowser.open("https://www.youtube.com/watch?v=xDhjma091uI")
 
@@ -142,7 +162,7 @@ def block_1():
 		say("Nothing good, but nothing bad either! "+ "Right " + name + "? Here is a song for you!")
 		webbrowser.open("https://www.youtube.com/watch?v=HCjNJDNzw8Y")
 
-	say("Just pause the song and say hello to me when you are done listening!")
+	say("Just pause the song and say hello to me when you are done.")
 	wait_and_listen()
 
 ###############################################################################
@@ -166,6 +186,24 @@ def block_2():
 #Favourite movie
 def block_3():
 	say("Why don't you tell me your favorite movie?")
+	fav_movie = listen()
+
+
+	say("You said " + fav_movie + ". Did I hear that right?")
 	reply = listen()
 
+	x = is_in_affirm_list(reply)
 
+	if x != "yes":
+		# say("I'm sorry. Do you mind typing it for me?")
+
+		# name = input("Enter your name - ")
+		fav_movie = get_input('movie')
+
+	say(fav_movie + "! I love that movie! Here is my favourite track from the movie")
+
+#MAIN
+
+#block_1()
+#block_2()
+block_3()
