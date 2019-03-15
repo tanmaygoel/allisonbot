@@ -202,14 +202,15 @@ def block_2():
 		# name = input("Enter your name - ")
 		fav_movie = get_input('movie')
 
-	say(fav_movie + "! I love that movie! Here is my favourite track from " + fav_movie + ".")
-
 	x = df.loc[df['movie'] == fav_movie.lower()]
 	x = x.sample(n=1)
 
-	say("Here is " + x['song'].values[0].title() + " from " + x['movie'].values[0].title() + ".")
-	say("Just pause the song and say hello to me when you are done.")
+	say(fav_movie + "! I love that movie! Here is my favourite track from " + fav_movie + ". " + x['song'].values[0].title() + ".")
+
+	#say("Here is " + x['song'].values[0].title() + " from " + x['movie'].values[0].title() + ".")
 	webbrowser.open(x['link'].values[0])
+	say("Just pause the song and say hello to me when you are done.")
+	
 
 	wait_and_listen()
 	song_feedback()
@@ -217,5 +218,5 @@ def block_2():
 
 #MAIN
 
-block_1()
+#block_1()
 block_2()
