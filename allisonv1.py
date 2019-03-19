@@ -18,7 +18,7 @@ text_to_speech = TextToSpeechV1(
 )
 
 #DEFAULTS AND INITIALISATIONS
-yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure"]
+yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct"]
 no_list = ["no", "nope", "nop", "nah", "not really", "not sure"]
 name = "tanny" 
 current_mood = 'neutral'
@@ -181,8 +181,11 @@ def song_feedback():
 	if x == "yes":
 		say("I'm happy to hear that! I will play more such songs that you like.")
 
+	elif x == "no":
+		say("Oh, okay! I really liked it. But I will remember your preference.")
+	
 	else:
-		say("Oh, that's a shame. I really liked it. But I will remember your preference.")
+		say("Ahh, I see. Good to know!")
 
 ###############################################################################
 #Favourite movie
@@ -210,7 +213,6 @@ def block_2():
 	#say("Here is " + x['song'].values[0].title() + " from " + x['movie'].values[0].title() + ".")
 	webbrowser.open(x['link'].values[0])
 	say("Just pause the song and say hello to me when you are done.")
-	
 
 	wait_and_listen()
 	song_feedback()
@@ -218,5 +220,5 @@ def block_2():
 
 #MAIN
 
-#block_1()
+block_1()
 block_2()
