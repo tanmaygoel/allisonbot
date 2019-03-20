@@ -19,7 +19,7 @@ text_to_speech = TextToSpeechV1(
 
 #DEFAULTS AND INITIALISATIONS
 yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct"]
-no_list = ["no", "nope", "nop", "nah", "not really", "not sure"]
+no_list = ["no", "na", "nope", "nop", "nah", "not really", "not sure", "wrong"]
 name = "tanny" 
 current_mood = 'neutral'
 fav_movie = 'star wars'
@@ -29,13 +29,6 @@ df = pd.read_excel('music_database.xlsx')
 
 
 def say(text_input):
-	# print("Pybot - " + text + "\n")
-	# engine.say(text)
-	# engine.runAndWait()
-
-	# tts = gTTS(text=text_input, lang='en')
-	# tts.save("file.mp3")
-	# os.system("mpg321 file.mp3")
 
 	filename = "ibm-tts.wav"
 
@@ -54,6 +47,7 @@ def say(text_input):
 	
 
 def listen():
+	#start = time.time()
 	
 	while True:
 		with sr.Microphone() as source:
@@ -70,6 +64,9 @@ def listen():
 			say("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
 		except sr.RequestError as e:
 		    print("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+	# end = time.time()
+	# print("\nTime taken for listen function = " + str(end-start) + " seconds")
 
 	return userinput
 
@@ -216,7 +213,6 @@ def block_2():
 
 	wait_and_listen()
 	song_feedback()
-
 
 #MAIN
 
