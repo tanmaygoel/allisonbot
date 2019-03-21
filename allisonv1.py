@@ -8,14 +8,17 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
 import random
 import pandas as pd
+from google.cloud import texttospeech
 
 
 #Different word lists
 
 text_to_speech = TextToSpeechV1(
-    iam_apikey='D2ACR9YVIiMPFN_qzhtVkS2Fp9pWN4JDh8Dlf5cB99M0',
-    url='https://stream.watsonplatform.net/text-to-speech/api'
+	iam_apikey='D2ACR9YVIiMPFN_qzhtVkS2Fp9pWN4JDh8Dlf5cB99M0',
+	url='https://stream.watsonplatform.net/text-to-speech/api'
 )
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tanmaygoel/Documents/GitHub/allisonbot/creds/My First Project-540a707ac7a2.json"
 
 #DEFAULTS AND INITIALISATIONS
 yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct"]
@@ -30,31 +33,53 @@ df = pd.read_excel('music_database.xlsx')
 
 def say(text_input):
 
-	filename = "ibm-tts.wav"
+	filename = "tts.mp3"
 
-	with open(filename, 'wb') as audio_file:
-	    audio_file.write(
-	        text_to_speech.synthesize(
-	            text_input,
-	            'audio/wav',
-	            'en-US_AllisonV2Voice'
-	        ).get_result().content)
+	# with open(filename, 'wb') as audio_file:
+	#     audio_file.write(
+	#         text_to_speech.synthesize(
+	#             text_input,
+	#             'audio/wav',
+	#             'en-US_AllisonV2Voice'
+	#         ).get_result().content)
+
+	client = texttospeech.TextToSpeechClient()
+
+	# Set the text input to be synthesized
+	synthesis_input = texttospeech.types.SynthesisInput(text=text_input)
+
+	# Build the voice request, select the language code ("en-US") and the ssml
+	# voice gender ("neutral")
+	voice = texttospeech.types.VoiceSelectionParams(language_code='en-US', ssml_gender=texttospeech.enums.SsmlVoiceGender.NEUTRAL, name = 'en-US-Wavenet-F')
+
+	# Select the type of audio file you want returned
+	audio_config = texttospeech.types.AudioConfig(
+		audio_encoding=texttospeech.enums.AudioEncoding.MP3)
+
+	# Perform the text-to-speech request on the text input with the selected
+	# voice parameters and audio file type
+	response = client.synthesize_speech(synthesis_input, voice, audio_config)
+
+	# The response's audio_content is binary.
+	with open(filename, 'wb') as out:
+		# Write the response to the output file.
+		out.write(response.audio_content)
 
 	music = pyglet.media.load(filename, streaming=False)
 	print("Allison - " + text_input + "\n")
 	music.play()
 	time.sleep(music.duration)
-	
+
 
 def listen():
 	#start = time.time()
 	
 	while True:
 		with sr.Microphone() as source:
-		    print("Say something!")
-		    audio = r.listen(source)
-		    #r.adjust_for_ambient_noise(source, duration = 1)
-		    
+			print("Say something!")
+			audio = r.listen(source)
+			#r.adjust_for_ambient_noise(source, duration = 1)
+			
 		try:
 			userinput = r.recognize_google(audio)
 			print("You said - " + userinput)
@@ -63,7 +88,7 @@ def listen():
 			#print("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
 			say("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
 		except sr.RequestError as e:
-		    print("Could not request results from Google Speech Recognition service; {0}".format(e))
+			print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
 	# end = time.time()
 	# print("\nTime taken for listen function = " + str(end-start) + " seconds")
@@ -75,9 +100,9 @@ def wait_and_listen():
 
 	while True:
 		with sr.Microphone() as source:
-		    print("Say something!")
-		    audio = r.listen(source)
-		    
+			print("Say something!")
+			audio = r.listen(source)
+			
 		try:
 			userinput = r.recognize_google(audio)
 			print("You said - " + userinput)

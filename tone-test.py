@@ -3,7 +3,7 @@ from watson_developer_cloud import ToneAnalyzerV3
 
 tone_analyzer = ToneAnalyzerV3(
     version='2017-09-21',
-    iam_apikey='g9dXQuCXWrytG8E7cZgvjOzU9WFh6zKJP5bUEsAL7R2C',
+    iam_apikey='ypJmU6pUYHMjIO-HaDiGom4hEKCayt4A2NRoGWFOcj2U',
     url='https://gateway.watsonplatform.net/tone-analyzer/api'
 )
 
