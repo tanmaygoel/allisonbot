@@ -1,13 +1,23 @@
-from flask import Flask
-from flask import render_template
+import os
+import sys
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+import BaseHTTPServer
 
-app = Flask(__name__)
+class MyHTTPRequestHandler(SimpleHTTPRequestHandler):
+    def translate_path(self,path):
+        path = SimpleHTTPRequestHandler.translate_path(self,path)
+        if os.path.isdir(path):
+            for base in "index", "default":
+                for ext in ".html", ".htm", ".txt":
+                    index = path + "/" + base + ext
+                    if os.path.exists(index):
+                        return index
+        return path
+
+def test(HandlerClass = MyHTTPRequestHandler,
+         ServerClass = BaseHTTPServer.HTTPServer):
+    BaseHTTPServer.test(HandlerClass, ServerClass)
 
 
-
-@app.route('/')
-def index():
-    return make_response(open('index.html').read())
-
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    test()
