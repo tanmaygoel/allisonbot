@@ -23,7 +23,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tanmaygoel/Documents/GitH
 #DEFAULTS AND INITIALISATIONS
 yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct"]
 no_list = ["no", "na", "nope", "nop", "nah", "not really", "not sure", "wrong"]
-name = "tanny" 
+name = "Adam" 
 current_mood = 'neutral'
 fav_movie = 'star wars'
 
@@ -105,8 +105,9 @@ def wait_and_listen():
 			
 		try:
 			userinput = r.recognize_google(audio)
-			print("You said - " + userinput)
-			break
+			if userinput == 'hello':
+				print("You said - " + userinput)
+				break
 		except sr.UnknownValueError:
 			print("No value")
 			#say("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
@@ -175,7 +176,7 @@ def block_1():
 
 	if sentiment == 'positive':
 		say("That's amazing " + name + ". Glad to hear that. Here is a song for you")
-		webbrowser.open("https://www.youtube.com/watch?v=ZbZSe6N_BXs")
+		webbrowser.open("https://youtu.be/ZbZSe6N_BXs?t=28")
 
 	elif sentiment == 'negative':
 		say("That's okay " + name + "! The day is over now. Let me soothe you with some nice music")
@@ -187,11 +188,11 @@ def block_1():
 
 	say("Just pause the song and say hello to me when you are done.")
 	wait_and_listen()
-	song_feedback()
+	song_feedback1()
 
 ###############################################################################
 #Second contact
-def song_feedback():
+def song_feedback1():
 	os.system("killall -9 'Google Chrome'")
 
 	say("So. Did you like that song?")
@@ -205,6 +206,24 @@ def song_feedback():
 
 	elif x == "no":
 		say("Oh, okay! I really liked it. But I will remember your preference.")
+	
+	else:
+		say("Ahh, I see. Good to know!")
+
+def song_feedback2():
+	os.system("killall -9 'Google Chrome'")
+
+	say("So. How did that song make you feel?")
+
+	reply = listen()
+
+	x = is_in_affirm_list(reply)
+
+	if x == "yes":
+		say("I'm happy to hear that! I will play more such songs that you like.")
+
+	elif x == "no":
+		say("Oh, okay! Don't worry. We can try something different next time! Music is a universal language!")
 	
 	else:
 		say("Ahh, I see. Good to know!")
@@ -237,7 +256,7 @@ def block_2():
 	say("Just pause the song and say hello to me when you are done.")
 
 	wait_and_listen()
-	song_feedback()
+	song_feedback2()
 
 #MAIN
 
