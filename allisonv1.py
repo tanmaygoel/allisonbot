@@ -11,6 +11,12 @@ import pandas as pd
 from google.cloud import texttospeech
 from ibm_watson import ToneAnalyzerV3
 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
 
 #Different word lists
 
@@ -122,15 +128,33 @@ def wait_and_listen():
 			
 		try:
 			userinput = r.recognize_google(audio)
-			if userinput == 'hello':
+			if 'Alison' in userinput:
 				print("You said - " + userinput)
 				break
 		except sr.UnknownValueError:
-			print("No value")
+			print("Waiting for " + name)
 			#say("I'm sorry, I didn't quite get that. Why don't you try saying it again?")
 			#engine.runAndWait()
 		except sr.RequestError as e:
 			print("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+def play(video):
+	driver = webdriver.Chrome('/Users/tanmaygoel/Documents/GitHub/allisonbot/chromedriver') 
+	driver.maximize_window()
+
+	wait = WebDriverWait(driver, 3)
+	presence = EC.presence_of_element_located
+	visible = EC.visibility_of_element_located
+
+	# Navigate to url with video being appended to search_query
+	driver.get("https://www.youtube.com/results?search_query=" + str(video))
+
+	# play the video
+	wait.until(visible((By.ID, "video-title")))
+	driver.find_element_by_id("video-title").click()
+
+	wait_and_listen()
+	os.system("killall -9 'Google Chrome'")
 	
 def get_sentiment(text):
 	
@@ -193,7 +217,7 @@ def get_input(value):
 
 ###############################################################################
 #First Contact
-def block_1():
+def block_0():
 	say("Hello there. What's your name?")
 	name = listen()
 
@@ -208,6 +232,8 @@ def block_1():
 		# name = input("Enter your name - ")
 		name = get_input('name')
 
+
+def block_1():
 	say("Awesome! Nice to meet you " + name + ". My name is Allison! How are you doing today?")
 
 	reply = listen()
@@ -229,26 +255,28 @@ def block_1():
 
 	if current_sentiment == 'positive':
 		say("That's amazing " + name + ". I hope it only gets better! Here is a song that always makes me happy!")
-		webbrowser.open("https://youtu.be/ZbZSe6N_BXs?t=28")
+		say("Enjoy the song! Just pause the song and call my name when you are done!")
+		play("Happy Pharrell")
 
 	elif current_sentiment == 'negative':
 		say("Aw, I'm sorry to hear that, " + name + ". Here is a tune I like listening to when I am a bit sad.")
-		webbrowser.open("https://www.youtube.com/watch?v=xDhjma091uI")
+		say("Enjoy the song! Just pause the song and call my name when you are done!")
+		play("I like me better Lauv")
 
 	else:
 		say("I am happy to make a new friend in you, "+ name + ". Here is my current favourite song!")
-		webbrowser.open("https://www.youtube.com/watch?v=HCjNJDNzw8Y")
+		say("Enjoy the song! Just pause the song and call my name when you are done!")
+		play("Havana Camilla Cabello")
 
-	say("Just pause the song and say hello to me when you are done.")
-	wait_and_listen()
+	
+	#wait_and_listen()
 	song_feedback1()
 
 ###############################################################################
 #Second contact
 def song_feedback1():
-	os.system("killall -9 'Google Chrome'")
 
-	say("So. Did you like that song?")
+	say("Welcome back! So. Did you like that song?")
 
 	reply = listen()
 
@@ -261,12 +289,12 @@ def song_feedback1():
 		say("Oh, okay! No worries. Maybe I'll find a better song next time.")
 	
 	else:
-		say("Interesting. I really enjoy talking to you " + name + "!")
+		say("Thank you for telling me how you feel " + name + ".")
 
 def song_feedback2():
 	os.system("killall -9 'Google Chrome'")
 
-	say("So. How did that song make you feel?")
+	say("Hello again! How did that song make you feel?")
 
 	reply = listen()
 
@@ -301,7 +329,7 @@ def block_2():
 	fav_artist = listen()
 
 
-	say("You said " + fav_movie + ". Did I hear that right?")
+	say("You said " + fav_artist + ". Did I hear that right?")
 	reply = listen()
 
 	x = is_in_affirm_list(reply)
@@ -310,21 +338,18 @@ def block_2():
 		# say("I'm sorry. Do you mind typing it for me?")
 
 		# name = input("Enter your name - ")
-		fav_movie = get_input('movie')
+		fav_artist = get_input('artist')
 
-	x = df.loc[df['movie'] == fav_movie.lower()]
-	x = x.sample(n=1)
-
-	say(fav_movie + "! I love that movie! Here is my favourite track from " + fav_movie + ". " + x['song'].values[0].title() + ".")
+	say(fav_artist + "? I love " + fav_artist + "! I'm sure you've heard this song. It's pretty popular right now!")
 
 	#say("Here is " + x['song'].values[0].title() + " from " + x['movie'].values[0].title() + ".")
-	webbrowser.open(x['link'].values[0])
-	say("Just pause the song and say hello to me when you are done.")
+	say("Like last time, just pause the song and call my name when you are done!")
+	play(fav_artist + " recent song")
 
-	wait_and_listen()
 	song_feedback2()
 
 #MAIN
 
+#block_0()
 #block_1()
 block_2()
