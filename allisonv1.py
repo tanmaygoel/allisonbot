@@ -9,6 +9,7 @@ import os
 import random
 import pandas as pd
 from google.cloud import texttospeech
+from ibm_watson import ToneAnalyzerV3
 
 
 #Different word lists
@@ -18,14 +19,28 @@ text_to_speech = TextToSpeechV1(
 	url='https://gateway-tok.watsonplatform.net/text-to-speech/api'
 )
 
+tone_analyzer = ToneAnalyzerV3(
+	version='2017-09-21',
+	iam_apikey='jAp3XAWT2awIhVzTmxg5WljgEzMfHbmteYFykmoj2iwv',
+	url='https://gateway.watsonplatform.net/tone-analyzer/api'
+)
+
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tanmaygoel/Documents/GitHub/allisonbot/creds/My First Project-540a707ac7a2.json"
 
 #DEFAULTS AND INITIALISATIONS
-yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct"]
+yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct", "Yes"]
 no_list = ["no", "na", "nope", "nop", "nah", "not really", "not sure", "wrong"]
+
+sad_tone = ['sadness', 'anger', 'fear', 'tentative']
+happy_tone = ['joy', 'confident']
+neutral_tone = ['analytical']
+
 name = "Adam" 
-current_mood = 'neutral'
+current_sentiment = 'neutral'
+current_tone = 'none'
+sub_tone = 'none'
 fav_movie = 'star wars'
+fav_artist = 'Queen'
 
 r = sr.Recognizer()
 df = pd.read_excel('music_database.xlsx')
@@ -36,12 +51,12 @@ def say(text_input):
 	filename = "tts.mp3"
 
 	with open(filename, 'wb') as audio_file:
-	    audio_file.write(
-	        text_to_speech.synthesize(
-	            text_input,
-	            'audio/wav',
-	            'en-US_AllisonV2Voice'
-	        ).get_result().content)
+		audio_file.write(
+			text_to_speech.synthesize(
+				text_input,
+				'audio/wav',
+				'en-US_AllisonV2Voice'
+			).get_result().content)
 
 	# client = texttospeech.TextToSpeechClient()
 
@@ -73,6 +88,8 @@ def say(text_input):
 
 def listen():
 	#start = time.time()
+
+	#userinput = input("Say - ")
 	
 	while True:
 		with sr.Microphone() as source:
@@ -97,7 +114,7 @@ def listen():
 
 def wait_and_listen():
 	#r.adjust_for_ambient_noise(sr.Microphone(), duration = 1)
-
+	#userinput = input("Say - ")
 	while True:
 		with sr.Microphone() as source:
 			print("Say something!")
@@ -123,13 +140,37 @@ def get_sentiment(text):
 
 def get_sentiment_emotion(sentiment): 
 	if sentiment['compound'] >= 0.05:
-		return 'positive'
+		x = 'positive'
 	elif sentiment['compound'] <= -0.05:
-		return 'negative'
+		x = 'negative'
 	else:
-		return 'neutral'
+		x = 'neutral'
+	return x
+
+def get_sentiment_tone(text):
+	
+	#analyse the text to get tone
+	tone_analysis = tone_analyzer.tone(
+		{'text': text},
+		content_type='text/html'
+	).get_result()
+
+	#how many tones did the api recognise?
+	tone_len = len(tone_analysis['document_tone']['tones'])
+	#print(tone_len)
 	
 
+	tone_list = []
+	
+	#loop to get the tones into list
+	i = 0
+	while i < tone_len:
+		tone_list.append(tone_analysis['document_tone']['tones'][i]['tone_id'])
+		i+=1
+
+	return tone_list
+
+	
 def is_in_affirm_list(sentence):
 	for word in yes_list:
 		if word in sentence:
@@ -171,19 +212,31 @@ def block_1():
 
 	reply = listen()
 
-	sentiment = get_sentiment_emotion(get_sentiment(reply)) 
-	current_mood = sentiment
+	current_sentiment = get_sentiment_emotion(get_sentiment(reply))
+	print('\nCurrent Sentiment = ' + current_sentiment)
+	
+	tone_list = get_sentiment_tone(reply)
+	if len(tone_list) != 0:
+		global current_tone
+		current_tone = tone_list[0]
 
-	if sentiment == 'positive':
-		say("That's amazing " + name + ". Glad to hear that. Here is a song for you")
+	if len(tone_list) > 1:
+		global sub_tone
+		sub_tone = tone_list[1]
+
+	print('Current Tone = ' + current_tone)
+	print('Sub Tone = ' + sub_tone +'\n')
+
+	if current_sentiment == 'positive':
+		say("That's amazing " + name + ". I hope it only gets better! Here is a song that always makes me happy!")
 		webbrowser.open("https://youtu.be/ZbZSe6N_BXs?t=28")
 
-	elif sentiment == 'negative':
-		say("That's okay " + name + "! The day is over now. Let me soothe you with some nice music")
+	elif current_sentiment == 'negative':
+		say("Aw, I'm sorry to hear that, " + name + ". Here is a tune I like listening to when I am a bit sad.")
 		webbrowser.open("https://www.youtube.com/watch?v=xDhjma091uI")
 
 	else:
-		say("Nothing good, but nothing bad either! "+ "Right " + name + "? Here is a song for you!")
+		say("I am happy to make a new friend in you, "+ name + ". Here is my current favourite song!")
 		webbrowser.open("https://www.youtube.com/watch?v=HCjNJDNzw8Y")
 
 	say("Just pause the song and say hello to me when you are done.")
@@ -205,10 +258,10 @@ def song_feedback1():
 		say("I'm happy to hear that! I will play more such songs that you like.")
 
 	elif x == "no":
-		say("Oh, okay! I really liked it. But I will remember your preference.")
+		say("Oh, okay! No worries. Maybe I'll find a better song next time.")
 	
 	else:
-		say("Ahh, I see. Good to know!")
+		say("Interesting. I really enjoy talking to you " + name + "!")
 
 def song_feedback2():
 	os.system("killall -9 'Google Chrome'")
@@ -217,22 +270,35 @@ def song_feedback2():
 
 	reply = listen()
 
-	x = is_in_affirm_list(reply)
-
-	if x == "yes":
-		say("I'm happy to hear that! I will play more such songs that you like.")
-
-	elif x == "no":
-		say("Oh, okay! Don't worry. We can try something different next time! Music is a universal language!")
+	current_sentiment = get_sentiment_emotion(get_sentiment(reply))
+	print('\nCurrent Sentiment = ' + current_sentiment)
 	
+	tone_list = get_sentiment_tone(reply)
+	if len(tone_list) != 0:
+		global current_tone
+		current_tone = tone_list[0]
+
+	if len(tone_list) > 1:
+		global sub_tone
+		sub_tone = tone_list[1]
+
+	print('Current Tone = ' + current_tone)
+	print('Sub Tone = ' + sub_tone +'\n')
+
+	if current_sentiment == 'positive':
+		say("I can sense your mood is a little better now! Glad I could help.")
+
+	elif current_sentiment == 'negative':
+		say("It's okay " + name + ". Maybe the next song will do the trick!")
+
 	else:
-		say("Ahh, I see. Good to know!")
+		say("Thank you for telling me how you feel " + name + ".")
 
 ###############################################################################
 #Favourite movie
 def block_2():
-	say("Why don't you tell me your favorite movie?")
-	fav_movie = listen()
+	say("Why don't you tell me your favorite artist at the moment?")
+	fav_artist = listen()
 
 
 	say("You said " + fav_movie + ". Did I hear that right?")
@@ -260,5 +326,5 @@ def block_2():
 
 #MAIN
 
-block_1()
+#block_1()
 block_2()
