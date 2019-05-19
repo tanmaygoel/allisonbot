@@ -46,10 +46,10 @@ current_sentiment = 'neutral'
 current_tone = 'none'
 sub_tone = 'none'
 fav_movie = 'star wars'
-fav_artist = 'Queen'
+fav_artist = 'Frank Ocean'
 
 r = sr.Recognizer()
-df = pd.read_excel('music_database.xlsx')
+
 
 
 def say(text_input):
@@ -214,10 +214,35 @@ def get_input(value):
 	text_input = input("Enter " + value + " - ")
 	return text_input
 
+def get_custom_song_df(var, song_df):
+	custom_song_df = song_df.loc[song_df['artist_name'] == var]
+	custom_song_df = custom_song_df.drop_duplicates()
+	return custom_song_df
+
+def get_popular_song(custom_song_df):
+	custom_song_df.sort_values(by='popularity', ascending = False) 
+	fav = custom_song_df.iloc[0,2]
+	return fav
+
+def get_fav_genre(custom_song_df):
+	genre = custom_song_df.iloc[0,0]
+	return genre
+
+
+def get_recs(genre, song_df):
+	custom_song_df2 = song_df.loc[song_df['genre'] == genre]
+	custom_song_df2 = custom_song_df2.sample(n=5)
+	recommended_list = custom_song_df2.sort_values(by='valence', ascending = True)
+	custom_song_df2.sort_values(by='valence', ascending = True)
+	recommended = recommended_list[['artist_name', 'track_name', 'valence']]
+
+	print(recommended)
+
+	return recommended
 
 ###############################################################################
 #First Contact
-def block_0():
+def intro():
 	say("Hello there. What's your name?")
 	name = listen()
 
@@ -313,43 +338,63 @@ def song_feedback2():
 	print('Current Tone = ' + current_tone)
 	print('Sub Tone = ' + sub_tone +'\n')
 
-	if current_sentiment == 'positive':
-		say("I can sense your mood is a little better now! Glad I could help.")
-
-	elif current_sentiment == 'negative':
-		say("It's okay " + name + ". Maybe the next song will do the trick!")
-
-	else:
-		say("Thank you for telling me how you feel " + name + ".")
+	say("Thank you for telling me your feelings " + name + ". Currently I sense " + current_tone + " in your words.")
 
 ###############################################################################
-#Favourite movie
-def block_2():
+#Favourite artist
+def block_2(song_df):
 	say("Why don't you tell me your favorite artist at the moment?")
-	fav_artist = listen()
+	fav_artist = listen().title()
 
 
-	say("You said " + fav_artist + ". Did I hear that right?")
-	reply = listen()
+	# say("You said " + fav_artist + ". Did I hear that right?")
+	# reply = listen()
 
-	x = is_in_affirm_list(reply)
+	# x = is_in_affirm_list(reply)
 
-	if x != "yes":
-		# say("I'm sorry. Do you mind typing it for me?")
+	# if x != "yes":
+	# 	# say("I'm sorry. Do you mind typing it for me?")
 
-		# name = input("Enter your name - ")
-		fav_artist = get_input('artist')
+	# 	# name = input("Enter your name - ")
+	# 	fav_artist = get_input('artist')
 
-	say(fav_artist + "? I love " + fav_artist + "! I'm sure you've heard this song. It's pretty popular right now!")
+	custom_df = get_custom_song_df(fav_artist, song_df)
+	song = get_popular_song(custom_df)
+	
+	#say('I love ' + fav_artist + '! Im sure you have heard ' + song '! Its pretty popular')
+	say("I love listening to " + fav_artist + "! Lets listen to "+ song + " together. Its my favourite song. Like last time, just pause the song and call my name when you are done!")
 
 	#say("Here is " + x['song'].values[0].title() + " from " + x['movie'].values[0].title() + ".")
-	say("Like last time, just pause the song and call my name when you are done!")
-	play(fav_artist + " recent song")
+	#say("")
+	play(fav_artist + " " + song)
 
 	song_feedback2()
 
-#MAIN
+	say("Now that I have a better understanding of your music taste, I am compiling some songs that you may like and will help you improve your mood. Are you ready?")
+	reply = listen()
+	x = is_in_affirm_list(reply)
+	
+	if x != "yes":
+		say("No worries. It was nice talking to you " + name + "! Hope to see you again!")
 
-#block_0()
+def block_3(song_df):
+	custom_df = get_custom_song_df(fav_artist, song_df)
+	recommended = get_recs(get_fav_genre(custom_df), song_df)
+
+	say("Great! Let's begin")
+
+
+
+#MAIN
+print("Loading Allison...")
+song_df = pd.read_excel('SpotifyFeatures.xlsx')
+start = ''
+start = input("\nAllison has been loaded. Input start - ")
+
+if start != '':
+	pass
+
+#intro()
 #block_1()
-block_2()
+block_2(song_df)
+block_3(song_df)

@@ -14,15 +14,4 @@ tone_analysis = tone_analyzer.tone(
     content_type='text/html'
 ).get_result()
 
-emotion_len = len(tone_analysis['document_tone']['tones'])
-
-i = 0
-
-happy_list = ['joy']
-
-sad_list['anger', 'fear', 'sadness']
-
-while i < emotion_len:
-	if tone_analysis['document_tone']['tones'][i]['tone_id']  in 
-
-#print(tone_analysis['document_tone']['tones'])
+print(tone_analysis['document_tone']['tones'])
