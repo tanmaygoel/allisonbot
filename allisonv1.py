@@ -46,7 +46,7 @@ current_sentiment = 'neutral'
 current_tone = 'none'
 sub_tone = 'none'
 fav_movie = 'star wars'
-fav_artist = 'Frank Ocean'
+fav_artist = 'Ariana Grande'
 
 r = sr.Recognizer()
 
@@ -317,7 +317,7 @@ def song_feedback1():
 		say("Thank you for telling me how you feel " + name + ".")
 
 def song_feedback2():
-	os.system("killall -9 'Google Chrome'")
+	#os.system("killall -9 'Google Chrome'")
 
 	say("Hello again! How did that song make you feel?")
 
@@ -339,6 +339,7 @@ def song_feedback2():
 	print('Sub Tone = ' + sub_tone +'\n')
 
 	say("Thank you for telling me your feelings " + name + ". Currently I sense " + current_tone + " in your words.")
+
 
 ###############################################################################
 #Favourite artist
@@ -381,20 +382,26 @@ def block_3(song_df):
 	custom_df = get_custom_song_df(fav_artist, song_df)
 	recommended = get_recs(get_fav_genre(custom_df), song_df)
 
-	say("Great! Let's begin")
+	#recs = recommended.to_dict()
+	songs = recommended['track_name'].tolist()
+	artists = recommended['artist_name'].tolist()
+	valences = recommended['valence'].tolist()
 
+	say("Great! Let's begin then! The first song I'm going to play for you is " + songs[4] + " by " + artists[4] + ". I hope you like it! You know who to call when you are done listening!")
+	play(songs[4] + " " + artists[4])
 
+	song_feedback2()
 
 #MAIN
 print("Loading Allison...")
 song_df = pd.read_excel('SpotifyFeatures.xlsx')
-start = ''
-start = input("\nAllison has been loaded. Input start - ")
+# start = ''
+# start = input("\nAllison has been loaded. Input start - ")
 
-if start != '':
-	pass
+# if start != '':
+# 	pass
 
 #intro()
 #block_1()
-block_2(song_df)
+#block_2(song_df)
 block_3(song_df)
