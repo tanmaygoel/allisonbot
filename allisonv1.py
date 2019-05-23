@@ -37,22 +37,25 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tanmaygoel/Documents/GitH
 yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct", "Yes"]
 no_list = ["no", "na", "nope", "nop", "nah", "not really", "not sure", "wrong"]
 
-sad_tone = ['sadness', 'anger', 'fear', 'tentative']
-happy_tone = ['joy', 'confident']
-neutral_tone = ['analytical']
+sad_list = ['sadness', 'anger', 'fear', 'tentative']
+happy_list = ['joy', 'confident']
+neutral_list = ['analytical']
 
 name = "Adam" 
 current_sentiment = 'neutral'
 current_tone = 'none'
 sub_tone = 'none'
-fav_movie = 'star wars'
+#fav_movie = 'star wars'
 fav_artist = 'Ariana Grande'
+
+# pick an animated gif file you have in the working directory
+ag_file = "graphics/talk.gif"
 
 r = sr.Recognizer()
 
 
-
 def say(text_input):
+	#show_gif()
 
 	filename = "tts.mp3"
 
@@ -91,7 +94,6 @@ def say(text_input):
 	music.play()
 	time.sleep(music.duration)
 
-
 def listen():
 	#start = time.time()
 
@@ -113,8 +115,8 @@ def listen():
 		except sr.RequestError as e:
 			print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
-	# end = time.time()
-	# print("\nTime taken for listen function = " + str(end-start) + " seconds")
+	# # end = time.time()
+	# # print("\nTime taken for listen function = " + str(end-start) + " seconds")
 
 	return userinput
 
@@ -244,6 +246,8 @@ def get_recs(genre, song_df):
 #First Contact
 def intro():
 	say("Hello there. What's your name?")
+
+	global name
 	name = listen()
 
 	say("You said " + name + ". Did I hear that right?")
@@ -297,6 +301,10 @@ def block_1():
 	#wait_and_listen()
 	song_feedback1()
 
+def flow(song_df):
+	block_2(song_df)
+	block_3(song_df)
+	block_4(song_df)
 ###############################################################################
 #Second contact
 def song_feedback1():
@@ -319,6 +327,8 @@ def song_feedback1():
 def song_feedback2():
 	#os.system("killall -9 'Google Chrome'")
 
+	global current_tone, sub_tone
+
 	say("Hello again! How did that song make you feel?")
 
 	reply = listen()
@@ -339,6 +349,9 @@ def song_feedback2():
 	print('Sub Tone = ' + sub_tone +'\n')
 
 	say("Thank you for telling me your feelings " + name + ". Currently I sense " + current_tone + " in your words.")
+
+	tone = current_tone
+	return tone
 
 
 ###############################################################################
@@ -387,21 +400,60 @@ def block_3(song_df):
 	artists = recommended['artist_name'].tolist()
 	valences = recommended['valence'].tolist()
 
-	say("Great! Let's begin then! The first song I'm going to play for you is " + songs[4] + " by " + artists[4] + ". I hope you like it! You know who to call when you are done listening!")
-	play(songs[4] + " " + artists[4])
+	say("Great! Let's begin then! The first song I'm going to play for you is " + songs[0] + " by " + artists[0] + ". I hope you like it! You know who to call when you are done listening!")
+	play(songs[0] + " " + artists[0])
 
+	tone = song_feedback2()
+
+	if tone in sad_list:
+		say("I have the perfect song lined up for you next! Here is " + songs[1] + " by " + artists[1] + ". Waiting to hear from you soon!")
+		play(songs[1] + " " + artists[1])
+
+		song_feedback2()
+
+	say("I personally love this next song! Lets listen to " + songs[2] + " by " + artists[2] + ". See you on the other side " + name + "!")
+	play(songs[2] + " " + artists[2])
+	tone = song_feedback2()
+
+	if tone in sad_list:
+		say("Next up is " + songs[3] + " by " + artists[3] + ".")
+		play(songs[3] + " " + artists[3])
+		song_feedback2()
+
+	say(name + "! Here is the last song from my playlist for you, I saved the best for last! " + songs[4] + " by " + artists[4] + ". Enjoy!")
+	play(songs[4] + " " + artists[4])
 	song_feedback2()
+
+def block_4(song_df):
+
+	if current_tone in happy_list:
+		say("I really enjoyed talking and listening to all these songs with you " + name + ". Be sure to find me next time you feel lonely and need a quick pick me up! See you next time! Bye!")
+
+	if current_tone in sad_list:
+		say("I still sense that you are a bit down " + name + ". Would you like to listen to some more music?")
+		reply = listen()
+		
+		x = is_in_affirm_list(reply)
+		if x == "yes":
+			flow(song_df)
+		else:
+			say("See you again sometime " + name + "!")
+		
+
 
 #MAIN
 print("Loading Allison...")
 song_df = pd.read_excel('SpotifyFeatures.xlsx')
-# start = ''
-# start = input("\nAllison has been loaded. Input start - ")
+start = ''
+start = input("\nAllison has been loaded. Input start - ")
 
-# if start != '':
-# 	pass
+if start != '':
+	pass
 
-#intro()
-#block_1()
-#block_2(song_df)
-block_3(song_df)
+intro()
+block_1()
+flow(song_df)
+
+# block_2(song_df)
+# block_3(song_df)
+# block_4()
