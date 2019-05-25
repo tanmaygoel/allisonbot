@@ -31,8 +31,6 @@ tone_analyzer = ToneAnalyzerV3(
 	url='YOUR URL HERE'
 )
 
-#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tanmaygoel/Documents/GitHub/allisonbot/creds/My First Project-540a707ac7a2.json"
-
 #DEFAULTS AND INITIALISATIONS
 yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct", "Yes"]
 no_list = ["no", "na", "nope", "nop", "nah", "not really", "not sure", "wrong"]
