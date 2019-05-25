@@ -21,17 +21,17 @@ from selenium.webdriver.support import expected_conditions as EC
 #Different word lists
 
 text_to_speech = TextToSpeechV1(
-	iam_apikey='xn6ssmk4zrDESReJqnB34vMyTyDLtVT8XbkD4Oag-D_T',
-	url='https://gateway-tok.watsonplatform.net/text-to-speech/api'
+	iam_apikey='YOUR KEY HERE',
+	url='YOUR URL HERE'
 )
 
 tone_analyzer = ToneAnalyzerV3(
 	version='2017-09-21',
-	iam_apikey='jAp3XAWT2awIhVzTmxg5WljgEzMfHbmteYFykmoj2iwv',
-	url='https://gateway.watsonplatform.net/tone-analyzer/api'
+	iam_apikey='YOUR KEY HERE',
+	url='YOUR URL HERE'
 )
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tanmaygoel/Documents/GitHub/allisonbot/creds/My First Project-540a707ac7a2.json"
+#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/tanmaygoel/Documents/GitHub/allisonbot/creds/My First Project-540a707ac7a2.json"
 
 #DEFAULTS AND INITIALISATIONS
 yes_list = ["yes", "yep", "yup", "yeah", "ya", "yah", "sure", "right", "correct", "Yes"]
@@ -48,14 +48,11 @@ sub_tone = 'none'
 #fav_movie = 'star wars'
 fav_artist = 'Ariana Grande'
 
-# pick an animated gif file you have in the working directory
-ag_file = "graphics/talk.gif"
 
 r = sr.Recognizer()
 
-
+#function to implement text-to-speech using Watson IBM API
 def say(text_input):
-	#show_gif()
 
 	filename = "tts.mp3"
 
@@ -66,34 +63,12 @@ def say(text_input):
 				'audio/wav',
 				'en-US_AllisonV2Voice'
 			).get_result().content)
-
-	# client = texttospeech.TextToSpeechClient()
-
-	# # Set the text input to be synthesized
-	# synthesis_input = texttospeech.types.SynthesisInput(text=text_input)
-
-	# # Build the voice request, select the language code ("en-US") and the ssml
-	# # voice gender ("neutral")
-	# voice = texttospeech.types.VoiceSelectionParams(language_code='en-US', ssml_gender=texttospeech.enums.SsmlVoiceGender.NEUTRAL, name = 'en-US-Wavenet-F')
-
-	# # Select the type of audio file you want returned
-	# audio_config = texttospeech.types.AudioConfig(
-	# 	audio_encoding=texttospeech.enums.AudioEncoding.MP3)
-
-	# # Perform the text-to-speech request on the text input with the selected
-	# # voice parameters and audio file type
-	# response = client.synthesize_speech(synthesis_input, voice, audio_config)
-
-	# # The response's audio_content is binary.
-	# with open(filename, 'wb') as out:
-	# 	# Write the response to the output file.
-	# 	out.write(response.audio_content)
-
+	
 	music = pyglet.media.load(filename, streaming=False)
 	print("Allison - " + text_input + "\n")
 	music.play()
 	time.sleep(music.duration)
-
+	
 def listen():
 	#start = time.time()
 
@@ -123,6 +98,7 @@ def listen():
 def wait_and_listen():
 	#r.adjust_for_ambient_noise(sr.Microphone(), duration = 1)
 	#userinput = input("Say - ")
+	time.sleep(10)
 	while True:
 		with sr.Microphone() as source:
 			print("Say something!")
